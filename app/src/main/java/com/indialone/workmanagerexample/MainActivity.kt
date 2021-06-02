@@ -6,20 +6,21 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var textView: TextView
     private lateinit var btnSendRequest: Button
-
+    private lateinit var btnPeriodicWorkRequest: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         textView = findViewById(R.id.textView)
-        btnSendRequest = findViewById(R.id.btn_send_request)
-
+        btnSendRequest = findViewById(R.id.btn_one_time_work_request)
+        btnPeriodicWorkRequest = findViewById(R.id.btn_periodic_work_request)
 
         btnSendRequest.setOnClickListener {
 
@@ -82,6 +83,31 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 })
+
+        }
+
+        btnPeriodicWorkRequest.setOnClickListener {
+            val periodicWorkerConstraints = Constraints.Builder()
+                .setRequiresCharging(false)
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .build()
+
+            val periodicWork = PeriodicWorkRequest.Builder(
+                PeriodicRequestWorker::class.java,
+                1,
+                TimeUnit.MINUTES
+            ).setConstraints(periodicWorkerConstraints)
+                .build()
+
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "Periodic Work Request",
+                ExistingPeriodicWorkPolicy.KEEP,
+                periodicWork
+            )
+
+
+
 
         }
 
